@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 struct ip_addr
 {
@@ -15,8 +16,7 @@ append_address(struct ip_addr **head, int ip[4], unsigned short port)
 {
   struct ip_addr *curr = (struct ip_addr *)malloc(sizeof(struct ip_addr));
 
-  int i;
-  for (i = 0; i < 4; i++)
+  for (int i = 0; i < 4; i++)
     curr->ip[i] = ip[i];
 
   curr->port = port;
@@ -92,10 +92,10 @@ convert_to_number(const char *address)
 
         if (is_valid_ip(temp_addr) && port > 0)
         {
-	  int i;
+//	  int i;
           
           append_address(&addr, temp_addr, port);
-          for (i = 0; i < 4; i++)
+          for (int i = 0; i < 4; i++)
             temp_addr[i] = -1;
           port = -1;
           counter = 0;	  
