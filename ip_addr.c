@@ -11,23 +11,60 @@ struct ip_addr
   struct ip_addr *next;
 };
 
-void 
-append_address(struct ip_addr **head, int ip[4], unsigned short port)
+struct ip_addr_linked
 {
-  struct ip_addr *curr = (struct ip_addr *)malloc(sizeof(struct ip_addr));
+  struct ip_addr *first;
+  struct ip_addr *last;
+};
 
+void 
+add_address(struct ip_addr_linked **addr, int append, int ip[4], unsigned short port)
+{
+  struct ip_addr *temp;
+
+  temp = (struct ip_addr *)malloc(sizeof(struct ip_addr));
+  temp->port = port;
   for (int i = 0; i < 4; i++)
-    curr->ip[i] = ip[i];
+    temp->ip[i] = ip[i];
 
-  curr->port = port;
-  curr->next = *head;
-  *head = curr;
+  if (*addr == NULL) 
+  {
+    *addr = (struct ip_addr_linked *)malloc(sizeof(struct ip_addr_linked));
+   (*addr)->first = (*addr)->last = temp;  
+  }
+  else
+  {
+    if (append == 1)
+    {
+      temp->next = NULL;
+      (*addr)->last->next = temp;
+      (*addr)->last = temp;
+    }
+    else
+    {
+      temp->next = (*addr)->first;
+     (*addr)->first = temp;
+    }
+  }
+      
+}
+
+
+void clear_ip_addr(struct ip_addr_linked *addr)
+{
+  struct ip_addr *curr = addr->first;
+  while (curr != NULL)
+  {
+    struct ip_addr *prev  = curr;    
+    curr = curr->next;
+    free(prev);
+  }
 }
 
 void
-print_address(struct ip_addr *head)
+print_address(struct ip_addr_linked *addr)
 {
-  struct ip_addr *curr = head;
+  struct ip_addr *curr = addr->first;
   while (curr != NULL)
   {
     printf("IPv4 address: %d.%d.%d.%d:%d\n", 
@@ -65,7 +102,7 @@ read_number(const char *number_string, int *number)
 void 
 convert_to_number(const char *address)
 {
-  struct ip_addr *addr = NULL;
+  struct ip_addr_linked *addr = NULL;
   int temp_addr[4] = {-1, -1, -1, -1};
   int counter = 0;
   int is_port = 0, port = -1;
@@ -94,7 +131,7 @@ convert_to_number(const char *address)
         {
 //	  int i;
           
-          append_address(&addr, temp_addr, port);
+          add_address(&addr, 0, temp_addr, port);
           for (int i = 0; i < 4; i++)
             temp_addr[i] = -1;
           port = -1;
@@ -139,9 +176,10 @@ convert_to_number(const char *address)
   }  
 
   if (is_valid_ip(temp_addr) && port > 0)
-    append_address(&addr, temp_addr, port);
+    add_address(&addr, 0, temp_addr, port);
 
   print_address(addr);
+  clear_ip_addr(addr);
 }
 
 
